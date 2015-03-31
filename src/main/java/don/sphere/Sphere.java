@@ -1,20 +1,14 @@
 package don.sphere;
 
-import com.adobe.xmp.XMPException;
-import com.adobe.xmp.XMPMeta;
-import com.adobe.xmp.XMPMetaFactory;
-import com.adobe.xmp.XMPUtils;
-import dk.pkg.xmputil4j.core.JpegXmpInputStream;
 import don.sphere.gui.Picker;
 
 import javax.swing.*;
-import java.io.*;
 
 /**
  * Created by Don on 21/03/2015.
  */
 public class Sphere {
-    public static void main(String... args)  {/*
+    public static void main(String... args) {/*
         Log.d("Starting");
         File file = new File("C:\\Users\\Don\\Desktop\\New folder (3)\\PANO_20150317_170744.jpg");
         File fileIn2 = new File("C:\\Users\\Don\\Desktop\\New folder (3)\\PANO_20150317_170744_2.jpg");

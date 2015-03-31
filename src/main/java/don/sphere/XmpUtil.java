@@ -22,13 +22,7 @@ import com.adobe.xmp.XMPMeta;
 import com.adobe.xmp.XMPMetaFactory;
 import com.adobe.xmp.options.SerializeOptions;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +33,7 @@ import java.util.List;
  * XMPMeta xmpMeta = XmpUtil.extractOrCreateXMPMeta(filename);
  * xmpMeta.setProperty(PanoConstants.GOOGLE_PANO_NAMESPACE, "property_name", "value");
  * XmpUtil.writeXMPMeta(filename, xmpMeta);
- *
+ * <p/>
  * Or if you don't care the existing XMP meta data in image file:
  * XMPMeta xmpMeta = XmpUtil.createXMPMeta();
  * xmpMeta.setPropertyBoolean(PanoConstants.GOOGLE_PANO_NAMESPACE, "bool_property_name", "true");
@@ -58,21 +52,7 @@ public class XmpUtil {
     private static final int M_APP1 = 0xe1; // Marker for Exif or XMP.
     private static final int M_SOS = 0xda; // Image data marker.
 
-    // Jpeg file is composed of many sections and image data. This class is used
-    // to hold the section data from image file.
-    private static class Section {
-        public int marker;
-        public int length;
-        public byte[] data;
-    }
-
-    static {
-        try {
-            XMPMetaFactory.getSchemaRegistry().registerNamespace(
-                    GOOGLE_PANO_NAMESPACE, PANO_PREFIX);
-        } catch (XMPException e) {
-            e.printStackTrace();
-        }
+    private XmpUtil() {
     }
 
     /**
@@ -97,7 +77,7 @@ public class XmpUtil {
     }
 
     /**
-     *  Extracts XMPMeta from a JPEG image file stream.
+     * Extracts XMPMeta from a JPEG image file stream.
      *
      * @param is the input stream containing the JPEG image file.
      * @return Extracted XMPMeta or null.
@@ -331,7 +311,7 @@ public class XmpUtil {
      * and XMP sections (with marker M_APP1) and ignore others; otherwise, keep
      * all sections. The last section with image data will have -1 length.
      *
-     * @param is Input image data stream.
+     * @param is           Input image data stream.
      * @param readMetaOnly Whether only reads the metadata in jpg.
      * @return The parse result.
      */
@@ -400,5 +380,20 @@ public class XmpUtil {
         }
     }
 
-    private XmpUtil() {}
+    // Jpeg file is composed of many sections and image data. This class is used
+    // to hold the section data from image file.
+    private static class Section {
+        public int marker;
+        public int length;
+        public byte[] data;
+    }
+
+    static {
+        try {
+            XMPMetaFactory.getSchemaRegistry().registerNamespace(
+                    GOOGLE_PANO_NAMESPACE, PANO_PREFIX);
+        } catch (XMPException e) {
+            e.printStackTrace();
+        }
+    }
 }

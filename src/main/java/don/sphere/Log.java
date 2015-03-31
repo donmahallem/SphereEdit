@@ -13,14 +13,15 @@ public class Log {
     public static void d(final String tag, final String message) {
         System.out.println(tag + " : " + message);
     }
+
     public static void e(final String message) {
-        e(TAG, message,null);
+        e(TAG, message, null);
     }
 
-    public static void e(final String tag, final String message,final Exception exception) {
+    public static void e(final String tag, final String message, final Exception exception) {
         System.out.println("=== ERROR ===");
         System.out.println(tag + " : " + message);
-        if(exception!=null)
-        exception.printStackTrace();
+        if (exception != null)
+            exception.printStackTrace();
     }
 }
