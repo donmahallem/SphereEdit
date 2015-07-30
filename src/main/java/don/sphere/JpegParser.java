@@ -16,8 +16,8 @@ public class JpegParser {
     public static final String GPANO_NAMESPACE = "http://ns.google.com/photos/1.0/panorama/";
     public static final String GPANO_PREFIX = "GPano";
     public static final int JPG_APP0 = 0xE0;
+    public static final int JPG_APP1 = 0xE1;
     private static final ByteString HEADER_PNG = ByteString.decodeHex("89504e470d0a1a0a");
-    private static final int JPG_APP1 = 0xE1;
     private static final int JPG_EOI = 0xD9;
     private static final int JPG_SOI = 0xD8;
     private static final int JPG_SOS = 0xDA;
@@ -28,6 +28,8 @@ public class JpegParser {
 
     static {
         mParser.add(new JfifUtil());
+        mParser.add(new ExifUtil());
+        mParser.add(new XmpUtil());
     }
 
     public static Sections readFile(File file) throws IOException {
