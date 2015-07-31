@@ -6,6 +6,7 @@ import okio.ByteString;
 import okio.Okio;
 
 import java.io.*;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,14 +68,18 @@ public class JpegParser {
             if (length < 0) {
                 return null;
             }
-            Section section = parseJpgSection(source.readByteString(length - 2), marker, length - 2);
-            if (section != null)
-                sections.add(section);
+            try {
+                Section section = parseJpgSection(source.readByteString(length - 2), marker, length - 2);
+                if (section != null)
+                    sections.add(section);
+            } catch (Exception exception) {
+                Log.d("ERROR", "Couldnt parse section. " + exception.getMessage());
+            }
         }
         return null;
     }
 
-    private static Section parseJpgSection(ByteString source, int marker, int length) throws EOFException {
+    private static Section parseJpgSection(ByteString source, int marker, int length) throws EOFException, ParseException {
         for (SectionParser parser : mParser) {
             if (parser.canParse(marker, length, source)) {
                 return parser.parse(marker, length, source);
