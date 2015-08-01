@@ -9,22 +9,22 @@ import java.util.List;
  * Created by Don on 30.07.2015.
  */
 public class SectionExif extends Section {
-    private Align mAlign;
+    private ByteOrder mByteOrder;
     private List<IFDEntry> mIFDEntryList = new ArrayList<IFDEntry>();
 
 
-    public Align getAlign() {
-        return mAlign;
+    public ByteOrder getByteOrder() {
+        return mByteOrder;
     }
 
-    public void setAlign(Align align) {
-        mAlign = align;
+    public void setByteOrder(ByteOrder byteOrder) {
+        mByteOrder = byteOrder;
     }
 
     @Override
     public String toString() {
         return "SectionExif{" +
-                "mAlign=" + mAlign +
+                "mAlign=" + mByteOrder +
                 ", mIFDEntryList=" + mIFDEntryList +
                 '}';
     }
@@ -33,7 +33,7 @@ public class SectionExif extends Section {
         this.mIFDEntryList.add(ifdEntry);
     }
 
-    public enum Align {
+    public enum ByteOrder {
         INTEL, MOTOROLA, ELSE
     }
 

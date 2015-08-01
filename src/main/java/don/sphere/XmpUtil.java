@@ -1,8 +1,6 @@
 package don.sphere;
 
-import com.adobe.xmp.XMPException;
-import com.adobe.xmp.XMPMeta;
-import com.adobe.xmp.XMPMetaFactory;
+import okio.Buffer;
 import okio.ByteString;
 
 /**
@@ -13,24 +11,15 @@ public class XmpUtil extends SectionParser<SectionXmp> {
     public static final ByteString XMP_HEADER = ByteString.encodeUtf8("http://ns.adobe.com/xap/1.0/\0");
     public static final int XMP_HEADER_SIZE = 29;
 
-    public static SectionXmp parse(ByteString data) {
-        try {
-            XMPMeta meta = XMPMetaFactory.parseFromBuffer(data.substring(XMP_HEADER_SIZE).toByteArray());
-            return new SectionXmp(meta);
-        } catch (XMPException e) {
-            return null;
-        }
-    }
-
     @Override
-    public boolean canParse(int marker, int length, ByteString data) {
-        if (marker != JpegParser.JPG_APP0)
+    public boolean canParse(int marker, int length, Buffer data) {
+        if (marker != JpegParser.JPG_APP1)
             return false;
-        return data.rangeEquals(0, XMP_HEADER, 0, XMP_HEADER_SIZE);
+        return data.indexOfElement(XMP_HEADER) == 0;
     }
 
     @Override
-    public SectionXmp parse(int marker, int length, ByteString data) {
+    public SectionXmp parse(int marker, int length, Buffer data) {
         return new SectionXmp(null);
     }
 }

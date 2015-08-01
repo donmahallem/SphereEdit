@@ -1,7 +1,11 @@
 package don.sphere;
 
+import don.sphere.exif.IFDEntry;
+import okio.Buffer;
 import okio.ByteString;
 
+import java.io.EOFException;
+import java.io.IOException;
 import java.text.ParseException;
 
 /**
@@ -12,9 +16,6 @@ public class ExifUtil extends SectionParser<SectionExif> {
     public static final int EXIF_HEADER_SIZE = 6;
     public static final ByteString ALIGN_INTEL = ByteString.decodeHex("49492A00");
     public static final ByteString ALIGN_MOTOROLA = ByteString.decodeHex("4d4d002A");
-    public static SectionExif parse(ByteString byteString) {
-        return new SectionExif();
-    }
 
     @Override
     public String toString() {
@@ -22,56 +23,68 @@ public class ExifUtil extends SectionParser<SectionExif> {
     }
 
     @Override
-    public boolean canParse(int marker, int length, ByteString data) {
+    public boolean canParse(int marker, int length, Buffer data) {
         if (marker != JpegParser.JPG_APP1)
             return false;
-        return data.rangeEquals(0, EXIF_HEADER, 0, EXIF_HEADER_SIZE);
+        Log.d("EXIF", "MAYBE PARSE - " + data.indexOfElement(EXIF_HEADER));
+        return data.indexOfElement(EXIF_HEADER) == 0;
     }
 
     @Override
-    public SectionExif parse(int marker, int length, ByteString data) throws ParseException {
+    public SectionExif parse(int marker, int length, Buffer data) throws ParseException, IOException {
+        data.skip(EXIF_HEADER_SIZE);
         SectionExif sectionExif = new SectionExif();
-        Log.d("parseExif", data.hex());
-        if (data.rangeEquals(6, ALIGN_INTEL, 0, 4))
-            sectionExif.setAlign(SectionExif.Align.INTEL);
-        else if (data.rangeEquals(6, ALIGN_MOTOROLA, 0, 4))
-            sectionExif.setAlign(SectionExif.Align.MOTOROLA);
+        final ByteString alignemnt = data.readByteString(4);
+        if (alignemnt.rangeEquals(0, ALIGN_INTEL, 0, 4))
+            sectionExif.setByteOrder(SectionExif.ByteOrder.INTEL);
+        else if (alignemnt.rangeEquals(0, ALIGN_MOTOROLA, 0, 4))
+            sectionExif.setByteOrder(SectionExif.ByteOrder.MOTOROLA);
         else
             throw new ParseException("Couldnt parse exif section. Unknown ALignment", 2);
-        int offset = 6 + parseInt(data.substring(10, 14).toByteArray());
+        if (sectionExif.getByteOrder() == SectionExif.ByteOrder.INTEL)
+            parseIntelByteOrder(sectionExif, data);
+        else
+            parseIntelByteOrder(sectionExif, data);
+        return sectionExif;
+    }
+
+    private void parseMotorolaByteOrder(SectionExif exif, Buffer source) {
+
+    }
+
+    private void parseIntelByteOrder(SectionExif exif, Buffer source) throws EOFException {
+        //Read first IFD OFFSET AND SKIP
+        final int offset = source.readIntLe() - 8;
+        source.skip(offset);
         while (true) {
-            Log.d("IFD BLOCK", "START====");
-            int ifdEntries = parseInt(data.substring(offset, offset + 2).toByteArray());
-            offset += 2;
-            Log.d("Entries", "" + ifdEntries);
+            final int ifdEntries = source.readShortLe();
+            Log.d("IFD BLOCK", "START==== " + ifdEntries + " Entries");
             int tag, dataFormat, dataComponents, dataBlock;
             for (int i = 0; i < ifdEntries; i++) {
                 //PARSE IFD ENTRY
-                Log.d("ENTRY", " DATA: " + data.substring(offset, offset + 12).hex());
-                tag = parseInt(data.substring(offset, offset + 2).toByteArray());
-                dataFormat = parseInt(data.substring(offset + 2, offset + 4).toByteArray());
-                dataComponents = parseInt(data.substring(offset + 4, offset + 8).toByteArray());
-                if (SectionExif.IFDEntry.tagBytes(tag) * dataComponents > 4) {
-                    //DATA PART IS OFFSET
-                    Log.d("OFFSET", "YES format: " + dataFormat);
-                    int entryOffset = parseInt(data.substring(8, 12).toByteArray());
-                    sectionExif.addIFDEntry(new SectionExif.IFDEntry(tag, dataFormat, dataComponents, data.substring(6 + entryOffset, 6 + entryOffset + dataComponents).toByteArray()));
+                tag = source.readShortLe();
+                dataFormat = source.readShortLe();
+                dataComponents = source.readIntLe();
+                Buffer offsetBuffer = new Buffer();
+                if (IFDEntry.tagBytes(dataFormat) * dataComponents > 4) {
+                    source.copyTo(offsetBuffer, (exif.getByteOrder() == SectionExif.ByteOrder.INTEL) ? source.readIntLe() : source.readInt(), dataComponents);
                 } else {
-                    //DATA IS NO OFFSET
-                    Log.d("OFFSET", "NO format: " + dataFormat);
-                    sectionExif.addIFDEntry(SectionExif.IFDEntry.create(tag, dataFormat, dataComponents, data.substring(offset + 8, offset + 12).toByteArray()));
+                    source.copyTo(offsetBuffer, 0, 4);
                 }
-                offset += 12;
+                exif.addIFDEntry(IFDEntry.create(exif.getByteOrder(), tag, dataFormat, dataComponents, offsetBuffer));
+                offsetBuffer.close();
+
             }
-            int ifdBlockOffset = parseInt(data.substring(offset, offset + 4).toByteArray());
-            offset += 4 + ifdBlockOffset;
+            int ifdBlockOffset = source.readIntLe();
             if (ifdBlockOffset == 0) {
                 //No further ifd block
                 Log.d("IFD BLOCK", "LAST====");
                 break;
+            } else {
+                Log.d("IFD BLOCK", "NEXT BLOCK OFFSET: " + ifdBlockOffset);
+                source.skip(ifdBlockOffset);
             }
             Log.d("IFD BLOCK", "END====");
         }
-        return sectionExif;
     }
 }

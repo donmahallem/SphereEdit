@@ -5,7 +5,10 @@ import okio.BufferedSource;
 import okio.ByteString;
 import okio.Okio;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,20 +71,25 @@ public class JpegParser {
             if (length < 0) {
                 return null;
             }
+            Buffer data = new Buffer();
+            source.read(data, length - 2);
             try {
-                Section section = parseJpgSection(source.readByteString(length - 2), marker, length - 2);
+                Section section = parseJpgSection(data, marker, length - 2);
                 if (section != null)
                     sections.add(section);
             } catch (Exception exception) {
                 Log.d("ERROR", "Couldnt parse section. " + exception.getMessage());
+            } finally {
+                data.close();
             }
         }
         return null;
     }
 
-    private static Section parseJpgSection(ByteString source, int marker, int length) throws EOFException, ParseException {
+    private static Section parseJpgSection(Buffer source, int marker, int length) throws IOException, ParseException {
         for (SectionParser parser : mParser) {
             if (parser.canParse(marker, length, source)) {
+                Log.d("parseJpgSection", "MARKER: " + marker + " PARSER: " + parser.getClass().getSimpleName());
                 return parser.parse(marker, length, source);
             }
         }

@@ -16,9 +16,11 @@ public class ap {
 
         for (File file : folder.listFiles(new JpegFilter())) {
             Log.d("File: " + file.getAbsolutePath());
-            Sections sections = JpegParser.readFile(file);
-            Log.d("sections: ", sections.toString());
         }
+
+        Sections sections = JpegParser.readFile(new File("C:\\Users\\Don\\Desktop\\New folder (3)\\PANO_20150317_170953.jpg"));
+        Log.d("sections: ", sections.toString());
+
     }
 
     private static final class JpegFilter implements FilenameFilter {

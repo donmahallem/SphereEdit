@@ -95,6 +95,10 @@ public class SectionJfif extends Section {
             this.MINOR = minor;
         }
 
+        public static Version create(byte b, byte b1) {
+            return new Version(b & 0xFF, b1 & 0xFF);
+        }
+
         @Override
         public String toString() {
             return "Version{" +

@@ -1,7 +1,9 @@
 package don.sphere;
 
+import okio.Buffer;
 import okio.ByteString;
 
+import java.io.IOException;
 import java.text.ParseException;
 
 /**
@@ -31,7 +33,7 @@ public abstract class SectionParser<T extends Section> {
         return ret;
     }
 
-    public abstract boolean canParse(int marker, int length, ByteString data);
+    public abstract boolean canParse(int marker, int length, Buffer data);
 
-    public abstract T parse(int marker, int length, ByteString data) throws ParseException;
+    public abstract T parse(int marker, int length, Buffer data) throws ParseException, IOException;
 }
