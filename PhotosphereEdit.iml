@@ -14,17 +14,10 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" exported="" name="Gradle: com.adobe.xmp:xmpcore:5.1.2" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: junit:junit:4.11" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.hamcrest:hamcrest-core:1.3" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: com.adobe.xmp:xmpcore:5.1.2" level="project" />
-    <orderEntry type="module-library" exported="">
-      <library name="Gradle: xmputil4j-core-0.1">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/xmputil4j-core-0.1.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
+    <orderEntry type="library" exported="" name="Gradle: com.squareup.okio:okio:1.5.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: io.reactivex:rxjava:1.0.13" level="project" />
   </component>
 </module>

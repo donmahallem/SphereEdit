@@ -1,21 +1,6 @@
-/*
- * Copyright (C) 2013 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package don.sphere;
 
+<<<<<<< HEAD
 
 import com.adobe.xmp.XMPException;
 import com.adobe.xmp.XMPMeta;
@@ -210,102 +195,27 @@ public class XmpUtil {
             os.write(section.data);
         }
     }
+=======
+import okio.Buffer;
+import okio.ByteString;
 
-    private static List<Section> insertXMPSection(
-            List<Section> sections, XMPMeta meta) {
-        if (sections == null || sections.size() <= 1) {
-            return null;
-        }
-        byte[] buffer;
-        try {
-            SerializeOptions options = new SerializeOptions();
-            options.setUseCompactFormat(true);
-            // We have to omit packet wrapper here because
-            // javax.xml.parsers.DocumentBuilder
-            // fails to parse the packet end <?xpacket end="w"?> in android.
-            options.setOmitPacketWrapper(true);
-            buffer = XMPMetaFactory.serializeToBuffer(meta, options);
-        } catch (XMPException e) {
-            Log.e(TAG, "Serialize xmp failed", e);
-            return null;
-        }
-        if (buffer.length > MAX_XMP_BUFFER_SIZE) {
-            // Do not support extended xmp now.
-            return null;
-        }
-        // The XMP section starts with XMP_HEADER and then the real xmp data.
-        byte[] xmpdata = new byte[buffer.length + XMP_HEADER_SIZE];
-        System.arraycopy(XMP_HEADER.getBytes(), 0, xmpdata, 0, XMP_HEADER_SIZE);
-        System.arraycopy(buffer, 0, xmpdata, XMP_HEADER_SIZE, buffer.length);
-        Section xmpSection = new Section();
-        xmpSection.marker = M_APP1;
-        // Adds the length place (2 bytes) to the section length.
-        xmpSection.length = xmpdata.length + 2;
-        xmpSection.data = xmpdata;
+/**
+ * Created by Don on 30.07.2015.
+ */
+public class XmpUtil extends SectionParser<SectionXmp> {
+>>>>>>> reattach
 
-        for (int i = 0; i < sections.size(); ++i) {
-            // If we can find the old xmp section, replace it with the new one.
-            if (sections.get(i).marker == M_APP1
-                    && hasXMPHeader(sections.get(i).data)) {
-                // Replace with the new xmp data.
-                sections.set(i, xmpSection);
-                return sections;
-            }
-        }
-        // If the first section is Exif, insert XMP data before the second section,
-        // otherwise, make xmp data the first section.
-        List<Section> newSections = new ArrayList<Section>();
-        int position = (sections.get(0).marker == M_APP1) ? 1 : 0;
-        newSections.addAll(sections.subList(0, position));
-        newSections.add(xmpSection);
-        newSections.addAll(sections.subList(position, sections.size()));
-        return newSections;
-    }
+    public static final ByteString XMP_HEADER = ByteString.encodeUtf8("http://ns.adobe.com/xap/1.0/\0");
+    public static final int XMP_HEADER_SIZE = 29;
 
-    /**
-     * Checks whether the byte array has XMP header. The XMP section contains
-     * a fixed length header XMP_HEADER.
-     *
-     * @param data Xmp metadata.
-     */
-    private static boolean hasXMPHeader(byte[] data) {
-        if (data.length < XMP_HEADER_SIZE) {
+    @Override
+    public boolean canParse(int marker, int length, Buffer data) {
+        if (marker != JpegParser.JPG_APP1)
             return false;
-        }
-        try {
-            byte[] header = new byte[XMP_HEADER_SIZE];
-            System.arraycopy(data, 0, header, 0, XMP_HEADER_SIZE);
-            if (new String(header, "UTF-8").equals(XMP_HEADER)) {
-                return true;
-            }
-        } catch (UnsupportedEncodingException e) {
-            return false;
-        }
-        return false;
+        return data.indexOfElement(XMP_HEADER) == 0;
     }
 
-    /**
-     * Gets the end of the xmp meta content. If there is no packet wrapper,
-     * return data.length, otherwise return 1 + the position of last '>'
-     * without '?' before it.
-     * Usually the packet wrapper end is "<?xpacket end="w"?> but
-     * javax.xml.parsers.DocumentBuilder fails to parse it in android.
-     *
-     * @param data xmp metadata bytes.
-     * @return The end of the xmp metadata content.
-     */
-    private static int getXMPContentEnd(byte[] data) {
-        for (int i = data.length - 1; i >= 1; --i) {
-            if (data[i] == '>') {
-                if (data[i - 1] != '?') {
-                    return i + 1;
-                }
-            }
-        }
-        // It should not reach here for a valid xmp meta.
-        return data.length;
-    }
-
+<<<<<<< HEAD
     /**
      * Parses the jpeg image file. If readMetaOnly is true, only keeps the Exif
      * and XMP sections (with marker M_APP1) and ignore others; otherwise, keep
@@ -397,3 +307,10 @@ public class XmpUtil {
         }
     }
 }
+=======
+    @Override
+    public SectionXmp parse(int marker, int length, Buffer data) {
+        return new SectionXmp(null);
+    }
+}
+>>>>>>> reattach
