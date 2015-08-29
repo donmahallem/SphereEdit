@@ -1,5 +1,9 @@
 package don.sphere;
 
+import rx.Observable;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -21,6 +25,21 @@ public class ap {
         Sections sections = JpegParser.readFile(new File("C:\\Users\\Don\\Desktop\\New folder (3)\\PANO_20150317_170953.jpg"));
         Log.d("sections: ", sections.toString());
 
+        Util.listFiles(new File("")).subscribe(new Action1<File>() {
+            @Override
+            public void call(File file) {
+                System.out.println("Has: " + file.getAbsolutePath());
+            }
+        });
+/*
+        File fi=new File("\\");
+        Observable.from(fi.listFiles()).subscribe(new Action1<File>() {
+            @Override
+            public void call(File file) {
+                System.out.println("Test: "+file.getAbsolutePath());
+
+            }
+        });*/
     }
 
     private static final class JpegFilter implements FilenameFilter {
